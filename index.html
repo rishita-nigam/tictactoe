@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tic Tac Toe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f1f1;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 30px;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .game {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      width: 300px;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .score {
+      margin-bottom: 10px;
+    }
+
+    .score-item {
+      margin-bottom: 5px;
+    }
+
+    .leaderboard {
+      margin-top: 20px;
+    }
+
+    .leaderboard-item {
+      margin-bottom: 5px;
+    }
+
+    .board {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 10px -5px;
+    }
+
+    .cell {
+      flex: 0 0 calc(33.33% - 10px);
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 40px;
+      background-color: #eee;
+      border-radius: 5px;
+      margin: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .cell:hover {
+      background-color: #ddd;
+    }
+
+    .reset-btn {
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .reset-btn:hover {
+      background-color: #45a049;
+    }
+
+    .player {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tic Tac Toe</h1>
+  <div class="container">
+    <div class="game">
+      <div class="score">
+        <h2>Score</h2>
+        <div id="player1-score" class="score-item">
+          Player 1: <span id="player1-points">0</span>
+        </div>
+        <div id="player2-score" class="score-item">
+          Player 2: <span id="player2-points">0</span>
+        </div>
+      </div>
+      <div id="board" class="board"></div>
+      <button class="reset-btn" onclick="resetGame()">Reset Game</button>
+      <div id="leaderboard" class="leaderboard">
+        <h2>Leaderboard</h2>
+        <div id="player1-leaderboard" class="leaderboard-item">
+          <span class="player">Player 1:</span> <span id="player1-leaderboard-score">0</span>
+        </div>
+        <div id="player2-leaderboard" class="leaderboard-item">
+          <span class="player">Player 2:</span> <span id="player2-leaderboard-score">0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    let currentPlayer = "X";
+    let gameActive = true;
+    let moves = 0;
+    let player1Points = 0;
+    let player2Points = 0;
+
+    const board = [
+      ["", "", ""],
+      ["", "", ""],
+      ["", "", ""]
+    ];
+
+    const winningCombinations = [
+      // Rows
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      // Columns
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      // Diagonals
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+
+    const boardElement = document.getElementById("board");
+    const cells = [];
+
+    function makeMove(row, col) {
+      if (!gameActive || board[row][col] !== "") return;
+
+      board[row][col] = currentPlayer;
+      moves++;
+      cells[row * 3 + col].innerText = currentPlayer;
+      cells[row * 3 + col].classList.add(currentPlayer);
+
+      if (checkWin()) {
+        endGame(false);
+        return;
+      }
+
+      if (moves === 9) {
+        endGame(true);
+        return;
+      }
+
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+    }
+
+    function checkWin() {
+      for (let combination of winningCombinations) {
+        const [a, b, c] = combination;
+        if (
+          board[Math.floor(a / 3)][a % 3] &&
+          board[Math.floor(a / 3)][a % 3] === board[Math.floor(b / 3)][b % 3] &&
+          board[Math.floor(a / 3)][a % 3] === board[Math.floor(c / 3)][c % 3]
+        ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function endGame(isDraw) {
+      gameActive = false;
+      if (isDraw) {
+        alert("It's a draw!");
+      } else {
+        alert(`Player ${currentPlayer} wins!`);
+        currentPlayer === "X" ? player1Points++ : player2Points++;
+        updateScores();
+      }
+      resetGame();
+    }
+
+    function updateScores() {
+      document.getElementById("player1-points").innerText = player1Points;
+      document.getElementById("player2-points").innerText = player2Points;
+      document.getElementById("player1-leaderboard-score").innerText = player1Points;
+      document.getElementById("player2-leaderboard-score").innerText = player2Points;
+    }
+
+    function resetGame() {
+      currentPlayer = "X";
+      gameActive = true;
+      moves = 0;
+      board.forEach(row => row.fill(""));
+      cells.forEach(cell => {
+        cell.innerText = "";
+        cell.classList.remove("X");
+        cell.classList.remove("O");
+      });
+    }
+
+    // Create the game board
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.addEventListener("click", () => makeMove(i, j));
+        cells.push(cell);
+        boardElement.appendChild(cell);
+      }
+    }
+  </script>
+</body>
+</html>
